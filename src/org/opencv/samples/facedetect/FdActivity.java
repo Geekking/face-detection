@@ -158,7 +158,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         
-        this.loadDetection();
         mOpenCvCameraView.enableView();
         
     }
@@ -193,12 +192,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray.release();
         mRgba.release();
     }
-
+    public void detectBatchImages(){
+    	
+    }
+    public void detectImage(){
+    	
+    }
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-
+        
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
             if (Math.round(height * mRelativeFaceSize) > 0) {
@@ -277,13 +281,5 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     }
-    static {
-    	
-    	if ( OpenCVLoader.initDebug()){  
-    		System.loadLibrary("detection_based_tracker");
-    	}else{   
-    		Log.e(TAG, "Init failed" );
-        
-    	}
-    }
+    
 }
