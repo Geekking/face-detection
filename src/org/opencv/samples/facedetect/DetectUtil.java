@@ -26,9 +26,10 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.highgui.*;
 import org.opencv.imgproc.Imgproc;
 
-public class DetectUtil extends Activity{
+public class DetectUtil {
 	private static final String TAG = "DetectionUtil";
-
+	private static Context context;
+	
     private File                   mCascadeFile;
     private Mat                    mRgba;
     private Mat                    mGray;
@@ -36,22 +37,23 @@ public class DetectUtil extends Activity{
     public static final int        NATIVE_DETECTOR     = 1;
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     
-    private int                    mDetectorType       = JAVA_DETECTOR;
+    public int                    mDetectorType       = JAVA_DETECTOR;
     
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
 
-    private CascadeClassifier      mJavaDetector;
-    private DetectionBasedTracker  mNativeDetector;
+    public CascadeClassifier      mJavaDetector;
+    public DetectionBasedTracker  mNativeDetector;
 
-    private CascadeClassifier      mJavaEyeDetector;
-    private DetectionBasedTracker  mNativeEyeDetector;
+    public CascadeClassifier      mJavaEyeDetector;
+    public DetectionBasedTracker  mNativeEyeDetector;
 
-	public DetectUtil(){
+	public DetectUtil(Context mcontext){
+		Log.i(TAG, "Instantiated new " + this.getClass());
+		this.context = mcontext;
 		this.loadDetector();
-        Log.i(TAG, "Instantiated new " + this.getClass());
+        
 	}
-	
 	
 	public boolean detectEye(Mat can_face){
 		return true;
@@ -100,11 +102,12 @@ public class DetectUtil extends Activity{
 	public void detectBatchImages(){
 		
 	}
-	public boolean loadDetctorFrom(int resouceID,String xmlfileName,CascadeClassifier mmJavaDetector,DetectionBasedTracker mmNativeDetector){
+	public boolean loadDetctorFrom(int resouceID,String xmlfileName,int type){
 		try {
             //load cascade file from application resources
-            InputStream is = this.getResources().openRawResource(resouceID);
-            File cascadeDir = this.getDir("cascade", Context.MODE_PRIVATE);
+			File cascadeDir = this.context.getDir("cascade", Context.MODE_PRIVATE);
+            
+			InputStream is = this.context.getResources().openRawResource(resouceID);
             
             mCascadeFile = new File(cascadeDir, xmlfileName);
             
@@ -117,15 +120,16 @@ public class DetectUtil extends Activity{
             }
             is.close();
             os.close();
-
-            mmJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-            if (mJavaDetector.empty()) {
-                Log.e(TAG, "Failed to load cascade classifier");
-                mJavaDetector = null;
-            } else
-                Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
-
-            mmNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+            if(type == 0){
+            	mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+            	if (mJavaDetector.empty()) {
+            		Log.e(TAG, "Failed to load cascade classifier");
+            		mJavaDetector = null;
+	            } else
+	                Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
+	
+	            mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+            }
             cascadeDir.delete();
             
             return true;
@@ -138,17 +142,23 @@ public class DetectUtil extends Activity{
 
 	}
 	public void loadDetector(){
+		Log.i(TAG,"detection loading");
 		String xmlFile = "lbpcascade_frontalface.xml";
-		this.loadDetctorFrom(R.raw.lbpcascade_frontalface, xmlFile, mJavaDetector, mNativeDetector);
+		this.loadDetctorFrom(R.raw.lbpcascade_frontalface, xmlFile,0);
+		Log.i(TAG,"detection loaded");
+		
 		//TODO: load eye detector
 	}
 	
-	private void setMinFaceSize(float faceSize) {
+	public void testDetectEffect(){
+		
+	}
+	public void setMinFaceSize(float faceSize) {
         mRelativeFaceSize = faceSize;
         mAbsoluteFaceSize = 0;
     }
 	
-	private void setDetectorType(int type) {
+	public void setDetectorType(int type) {
         if (mDetectorType != type) {
             mDetectorType = type;
 
