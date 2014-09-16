@@ -21,6 +21,7 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,7 +29,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import org.opencv.samples.facedetect.DetectUtil;
-
+import android.os.Environment; 
 public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
@@ -39,7 +40,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
     private MenuItem               mItemType;
-
+    private MenuItem 			   mItemTest;
     private DetectUtil             detectUtil;
     private Mat                    mRgba;
     private Mat                    mGray;
@@ -51,7 +52,37 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private CameraBridgeViewBase   mOpenCvCameraView;
 
-
+    public static boolean copyAssetData(Context context, String dirName, String targetPath) {
+	    try {
+	    	AssetManager assetManager = context.getAssets();
+	    	String initstrString = "(人教新课标)一年级语文下册课件 两只鸟蛋";
+	    	File file = new File(targetPath + File.separator + "yuwen"+File.separator+"1"+File.separator+initstrString);
+	    	if(!file.exists() && !file.isDirectory())
+	            file.mkdirs();
+	    	String[] string = assetManager.list("init");
+	    	for (String string2 : string) {
+	    		//Log.e("tag", string2);
+	    		InputStream inputStream = assetManager.open(dirName+File.separator+string2);
+		        FileOutputStream output = new FileOutputStream(file + File.separator+ initstrString + string2.substring(string2.length()-4, string2.length()));
+		        
+		        byte[] buf = new byte[10240];
+		        int count = 0;
+		        while ((count = inputStream.read(buf)) > 0) {
+		            output.write(buf, 0, count);
+		        }
+		        output.close();
+		        
+		        inputStream.close();
+			}
+	        
+	    } catch (IOException e) {
+	        
+	// TODO Auto-generated catch block
+	        e.printStackTrace();
+	        return false;
+	    }
+	    return true;
+	}
     public FdActivity() {
         mDetectorName = new String[2];
         
@@ -66,10 +97,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.face_detect_surface_view);
+        
+        File rootPath = Environment.getExternalStorageDirectory();
+        FdActivity.copyAssetData(this, "init", rootPath + File.separator+"hello");
+        
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         
-        this.detectUtil = new DetectUtil(this.getApplicationContext());
+        this.detectUtil = new DetectUtil(this);
         
         mDetectorName[this.detectUtil.JAVA_DETECTOR] = "Java";
         mDetectorName[this.detectUtil.NATIVE_DETECTOR] = "Native (tracking)";
@@ -108,42 +143,37 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray.release();
         mRgba.release();
     }
-    public void detectBatchImages(){
-    	
-    }
-    public void detectImage(){
-    	
-    }
+   
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
-        mGray = inputFrame.gray();
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
-            this.detectUtil.mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-
-        MatOfRect faces = new MatOfRect();
-
-        if (this.detectUtil.mDetectorType == this.detectUtil.JAVA_DETECTOR) {
-            if (this.detectUtil.mJavaDetector != null)
-                this.detectUtil.mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        }
-        else if (this.detectUtil.mDetectorType == this.detectUtil.NATIVE_DETECTOR) {
-            if (this.detectUtil.mNativeDetector != null)
-                this.detectUtil.mNativeDetector.detect(mGray, faces);
-        }
-        else {
-            Log.e(TAG, "Detection method is not selected!");
-        }
-
-        Rect[] facesArray = faces.toArray();
-        for (int i = 0; i < facesArray.length; i++)
-            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+//        mGray = inputFrame.gray();
+//        if (mAbsoluteFaceSize == 0) {
+//            int height = mGray.rows();
+//            if (Math.round(height * mRelativeFaceSize) > 0) {
+//                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+//            }
+//            this.detectUtil.mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
+//        }
+//
+//        MatOfRect faces = new MatOfRect();
+//
+//        if (this.detectUtil.mDetectorType == this.detectUtil.JAVA_DETECTOR) {
+//            if (this.detectUtil.mJavaDetector != null)
+//                this.detectUtil.mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+//                        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+//        }
+//        else if (this.detectUtil.mDetectorType == this.detectUtil.NATIVE_DETECTOR) {
+//            if (this.detectUtil.mNativeDetector != null)
+//                this.detectUtil.mNativeDetector.detect(mGray, faces);
+//        }
+//        else {
+//            Log.e(TAG, "Detection method is not selected!");
+//        }
+//
+//        Rect[] facesArray = faces.toArray();
+//        for (int i = 0; i < facesArray.length; i++)
+//            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
 
         return mRgba;
     }
@@ -156,7 +186,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
         mItemType   = menu.add(mDetectorName[this.detectUtil.mDetectorType]);
-        mItemType   = menu.add("detect local images");
+        mItemTest   = menu.add("detect local images");
         return true;
     }
 
@@ -175,7 +205,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             int tmpDetectorType = (this.detectUtil.mDetectorType + 1) % mDetectorName.length;
             item.setTitle(mDetectorName[tmpDetectorType]);
             this.detectUtil.setDetectorType(tmpDetectorType);
-        }else{
+        }else if(item == mItemTest){
         	if (mOpenCvCameraView != null)
                 mOpenCvCameraView.disableView();
         	this.detectUtil.testDetectEffect();

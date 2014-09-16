@@ -26,6 +26,8 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.highgui.*;
 import org.opencv.imgproc.Imgproc;
 
+import android.os.Environment; 
+
 public class DetectUtil {
 	private static final String TAG = "DetectionUtil";
 	private static Context context;
@@ -51,7 +53,10 @@ public class DetectUtil {
 	public DetectUtil(Context mcontext){
 		Log.i(TAG, "Instantiated new " + this.getClass());
 		this.context = mcontext;
+		mRgba = new Mat();
+		mGray = new Mat();
 		this.loadDetector();
+		
         
 	}
 	
@@ -60,12 +65,19 @@ public class DetectUtil {
 	}
 	
 	public Mat detectImage(String imagePath){
+		File imgFile = new  File(imagePath);
+		if(!imgFile.exists()){
+			Log.e(TAG,"file not found at " + imgFile.getAbsolutePath());
+			return null;
+		}
+		Mat inputFrame = Highgui.imread(imgFile.getAbsolutePath(),1);
+		assert(!inputFrame.empty());
 		
-		Mat inputFrame = Highgui.imread(imagePath);
 		inputFrame.copyTo(mRgba);
 		//mGray = inputFrame.gray();
 		//mRgba = inputFrame.rgba();
-		Imgproc.cvtColor(inputFrame, mGray, Imgproc.COLOR_RGB2GRAY, 0);
+
+		Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY,1);
 		
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -90,18 +102,20 @@ public class DetectUtil {
         else {
             Log.e(TAG, "Detection method is not selected!");
         }
-        
         Rect[] facesArray = faces.toArray();
+        Log.i(TAG,"detected faces: " + facesArray.length);
         for (int i = 0; i < facesArray.length; i++){
         	//TODO: detect eyes here
         	Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-        
+        	
         }
+        
         return mRgba;
 	}
 	public void detectBatchImages(){
-		
+	
 	}
+	
 	public boolean loadDetctorFrom(int resouceID,String xmlfileName,int type){
 		try {
             //load cascade file from application resources
@@ -151,6 +165,14 @@ public class DetectUtil {
 	}
 	
 	public void testDetectEffect(){
+		//int rid = R.drawable.image;
+		//String path = this.context.getString(rid);
+
+        String rootPath = Environment.getExternalStorageDirectory() +File.separator+"images"+ File.separator;
+        String path = rootPath +  "004.JPG";
+		Mat mat = this.detectImage(path);
+		if(mat != null)
+			Highgui.imwrite(rootPath + "004_f.JPG",mat);
 		
 	}
 	public void setMinFaceSize(float faceSize) {
