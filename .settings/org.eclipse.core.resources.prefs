@@ -1,2 +1,5 @@
 eclipse.preferences.version=1
-encoding//src/org/opencv/samples/facedetect/FdActivity.java=UTF-8
+encoding//src/org/sysu/bbalbum/util/DetectUtil.java=UTF-8
+encoding//src/org/sysu/bbalbum/util/DetectionBasedTracker.java=UTF-8
+encoding//src/org/sysu/bbalbum/util/FdActivity.java=UTF-8
+encoding//src/org/sysu/bbalbum/util/MainActivity.java=UTF-8
